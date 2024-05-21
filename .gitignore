@@ -1,0 +1,12 @@
+/main/static/fashion-dataset
+/env
+/main/embeddings.pkl
+main/filekanaam.pkl
+main/modellplsss.pkl
+ml_models/filekanaam.pkl
+ml_models/modellplsss.pkl
+
+virtual_dressing/ACGPN/lip_final.pth
+virtual_dressing/ACGPN/pose/pose_iter_440000.caffemodel
+virtual_dressing/ACGPN/U-2-Net/saved_models/u2net/u2net.pth
+virtual_dressing/ACGPN/lip_final.pth
