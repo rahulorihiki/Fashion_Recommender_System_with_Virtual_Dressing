@@ -44,72 +44,6 @@ model = tensorflow.keras.Sequential(
 )
 
 
-# Webdriver Automation functions
-def get_images_from_google(wd, delay, max_images , val):
-	def scroll_down(wd):
-		wd.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-		time.sleep(delay)
-
-	url = f"https://www.google.com/search?q={val}&tbm=isch&ved=2ahUKEwjykJ779tbzAhXhgnIEHSVQBksQ2-cCegQIABAA&oq={val}&gs_lcp=CgNpbWcQAzIHCAAQsQMQQzIHCAAQsQMQQzIECAAQQzIECAAQQzIECAAQQzIECAAQQzIECAAQQzIECAAQQzIECAAQQzIECAAQQzoHCCMQ7wMQJ1C_31NYvOJTYPbjU2gCcAB4AIABa4gBzQSSAQMzLjOYAQCgAQGqAQtnd3Mtd2l6LWltZ8ABAQ&sclient=img&ei=7vZuYfLhOeGFytMPpaCZ2AQ&bih=817&biw=1707&rlz=1C1CHBF_enCA918CA918"
-	wd.get(url)
-
-	image_urls = set()
-	skips = 0
-
-	while len(image_urls) + skips < max_images:
-		scroll_down(wd)
-
-		thumbnails = wd.find_elements(By.CLASS_NAME, "Q4LuWd")
-
-		for img in thumbnails[len(image_urls) + skips:max_images]:
-			try:
-				img.click()
-				time.sleep(delay)
-			except:
-				continue
-
-			images = wd.find_elements(By.CLASS_NAME, "n3VNCb")
-			for image in images:
-				if image.get_attribute('src') in image_urls:
-					max_images += 1
-					skips += 1
-					break
-
-				if image.get_attribute('src') and 'http' in image.get_attribute('src'):
-					image_urls.add(image.get_attribute('src'))
-					print(f"Found {len(image_urls)}")
-
-	return image_urls
-
-
-# def download_image(download_path, url, file_name):
-# 	try:
-# 		image_content = requests.get(url).content
-# 		image_file = io.BytesIO(image_content)
-# 		image = Image.open(image_file)
-# 		file_path = download_path + file_name
-        
-# 		with open(file_path, "wb") as f:
-# 			image.save(f, "JPEG")
-
-# 		print("Success")
-# 	except Exception as e:
-# 		print('FAILED -', e)
-
-
-# def roles_required(roles):
-#     def decorator(f):
-#         @wraps(f)
-#         def decorated_function(*args, **kwargs):
-#             if current_user.email not in roles:
-#                 print(current_user)
-#                 flash("Not authorized to access this webpage" , "danger")
-#                 return redirect(url_for('login'))
-#             return f(*args, **kwargs)
-#         return decorated_function
-#     return decorator
-
-
 def login_required(view_func):
     @wraps(view_func)
     def wrapped_view(*args, **kwargs):
@@ -166,14 +100,12 @@ class RegisterForm(FlaskForm):
 cursor1 = connection1.cursor()
 cursor1.execute("SELECT DISTINCT articleType FROM 'products' ")
 distinct_fashion = cursor1.fetchall()
-# print(len(distinct_fashion))
 
 @app.route("/")
 def contact():
-    # print(current_user)
-    cursor1 = connection1.cursor()
-    cursor1.execute("SELECT * FROM 'products' ")
-    fashion = cursor1.fetchall()
+    # cursor1 = connection1.cursor()
+    # cursor1.execute("SELECT * FROM 'products' ")
+    # fashion = cursor1.fetchall()
     return render_template("index.html")
 
 @app.route("/search/<data>" , methods = ["POST"])
@@ -406,15 +338,13 @@ def signup():
     #     return redirect(url_for('contact'))
     if form.validate_on_submit():
         hashed_password = generate_password_hash(form.password.data, method='sha256')
-        user_type = request.form['user-type']
-        if user_type == "user":
-            username = form.username.data
-            email = form.email.data
-            password = hashed_password
-            query = "INSERT INTO user123 (username, email, password) VALUES (?, ?, ?)"
-            cursor = connection2.cursor()
-            cursor.execute(query, (username, email, password))
-            connection2.commit()
+        username = form.username.data
+        email = form.email.data
+        password = hashed_password
+        query = "INSERT INTO user123 (username, email, password) VALUES (?, ?, ?)"
+        cursor = connection2.cursor()
+        cursor.execute(query, (username, email, password))
+        connection2.commit()
         return redirect(url_for('login'))
 
     return render_template('signup.html', form=form)
@@ -466,40 +396,23 @@ def login():
     # if current_user.is_authenticated:
     #     return redirect(url_for('contact'))
     if form.validate_on_submit():
-        user_type = request.form['user-type']
-        if user_type == "user":
-            username = form.username.data
-            password = form.password.data
-            query = "SELECT * FROM user123 WHERE username = ?"
-            cursor = connection2.cursor()
-            cursor.execute(query, (username,))
-            user = cursor.fetchone()
-            # print(user)
-            if user and check_password_hash(user[3], password):
-                # Assuming the password hash is stored at index 2 in the user123 table
-                flash(f"Welcome {username}! You have successfully logged in to our website.", 'success')
-                session["logged_in"] = True
-                session["user_id"] = user[0]
-                session["username"] = user[1]
-                if next_url:
-                        return redirect(next_url)
-                # Login logic and redirection
-                return redirect(url_for('contact'))
-        elif user_type == "recruitor":
-            username = form.username.data
-            password = form.password.data
-            query = "SELECT * FROM admin123 WHERE username = ?"
-            cursor = connection2.cursor()
-            cursor.execute(query, (username,))
-            admin = cursor.fetchone()
-            if admin and admin[3] == password:
-                # Assuming the password is stored at index 2 in the admin123 table
-                flash(f"Welcome {username}! You have successfully logged in to our website as an Admin.", 'success')
-                session["logged_in"] = True
-                session["user_id"] = admin[0]
-                session["username"] = admin[1]
-                # Login logic and redirection
-                return redirect(url_for('admin_dashboard'))
+        username = form.username.data
+        password = form.password.data
+        query = "SELECT * FROM user123 WHERE username = ?"
+        cursor = connection2.cursor()
+        cursor.execute(query, (username,))
+        user = cursor.fetchone()
+        # print(user)
+        if user and check_password_hash(user[3], password):
+            # Assuming the password hash is stored at index 2 in the user123 table
+            flash(f"Welcome {username}! You have successfully logged in to our website.", 'success')
+            session["logged_in"] = True
+            session["user_id"] = user[0]
+            session["username"] = user[1]
+            if next_url:
+                    return redirect(next_url)
+            # Login logic and redirection
+            return redirect(url_for('contact'))
 
         flash("You have entered wrong username or password, please try again.", "danger")
         return redirect(url_for('login'))
@@ -538,91 +451,3 @@ def error_500(error):
 def admin_dashboard():
     return render_template("admin-dashboard.html")
 
-# @app.route("/admin-userlist")
-# # @login_required
-# def admin_userlist():
-#     users = User123.query.all()
-#     return render_template("admin-user.html" , users = users)
-
-@app.route("/admin-userlist")
-def admin_userlist():
-    query = "SELECT * FROM user123"
-    cursor = connection2.cursor()
-    cursor.execute(query)
-    users = cursor.fetchall()
-    print(users)
-    return render_template("admin-user.html", users=users)
-
-
-@app.route("/admin-model-testing")
-# @login_required
-def admin_model_testing():
-    return render_template("admin-test-model.html")
-
-
-@app.route("/admin-add-images" , methods = ['GET' , 'POST'])
-# @login_required
-def admin_add_image():
-    val1 = request.form.get("imgsearch")
-    val2 = request.form.get("imgquantity")
-    urls = "noimages"
-    if request.method == 'POST':
-        PATH = "C:\\Program Files (x86)\\chromedriver.exe"
-        wd = webdriver.Chrome(PATH)
-        urls = get_images_from_google(wd, 1, int(val2) , val1)
-    return render_template("admin-addimg.html" , urls = urls)
-
-
-def download_image(download_path, url, file_name):
-	try:
-		image_content = requests.get(url).content
-		image_file = io.BytesIO(image_content)
-		image = Image.open(image_file)
-		file_path = download_path + file_name
-
-		with open(file_path, "wb") as f:
-			image.save(f, "JPEG")
-
-		print("Success")
-	except Exception as e:
-		print('FAILED -', e)
-
-def download_images(urls):
-    for i, url in enumerate(urls):
-	    download_image("main\\static\\new_imgs\\", url, str(i) + ".jpg")
-
-
-@app.route("/admin-remove-image" , methods = ['POST' , 'GET'])
-def admin_remove_image():
-    url = request.args.get("b")
-    urls = request.args.getlist("a")
-    print(urls)
-    if request.method == 'POST':
-        # print("It is reachinggggg")
-        # print(urls)
-        # res = urls[1:-1].strip('][').split(', ')
-        # for i in range(len(res)):
-        #     res[i] = res[i][1:-1]
-        # print(res[0])
-        # print(res)
-        # download_images(res)
-        # res = "noimages"
-        if urls[0][0] == "{":
-            res = urls[0][1:-1].strip('][').split(', ')
-            for i in range(len(res)):
-                res[i] = res[i][1:-1]
-            download_images(res)
-            res = "noimages"
-        else:
-            download_images(urls)
-            res = "noimages"
-    else:
-        if urls[0][0] == "{":
-            res = urls[0][1:-1].strip('][').split(', ')
-            for i in range(len(res)):
-                res[i] = res[i][1:-1]
-            res.remove(url)
-        else:
-            urls.remove(url)
-            res = urls
-    return render_template('admin-addimg.html' , urls = res)
